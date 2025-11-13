@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flow Head Graph Calculations</title>
+  <style>
+    body {
+      font-family: "Courier New", monospace; /* monospaced for alignment */
+      max-width: 500px;
+      margin: 2rem auto;
+      padding: 1rem;
+      background: #f9f9f9;
+      border-radius: 12px;
+    }
+
+    h1 {
+      text-align: center;
+    }
+
+    section {
+      margin-bottom: 1rem;
+    }
+
+    label {
+      display: inline-block;
+      width: 150px;
+      font-weight: bold;
+    }
+
+    input {
+      width: 100px;
+      padding: 4px;
+      font-family: inherit;
+    }
+
+    hr {
+      margin: 1.5rem 0;
+    }
+
+    /* Output styling */
+    section.output p {
+      display: flex;
+      justify-content: space-between;
+      border-bottom: 1px dotted #ccc;
+      margin: 4px 0;
+      padding-bottom: 2px;
+    }
+
+    section.output p span {
+      text-align: right;
+      min-width: 120px;
+    }
+  </style>
+</head>
+<body>
+
+<h1>Flow Head Graph Calculations</h1>
+
+<main>
+
+  <!-- Inputs -->
+  <section>
+    <label for="C2">Notch Angle (°)</label>
+    <input type="number" id="C2" name="C2" oninput="handleChange()" min="45" max="90" step="0.1">
+  </section>
+
+  <section>
+    <label for="C3">Head (cm)</label>
+    <input type="number" id="C3" name="C3" oninput="handleChange()">
+  </section>
+
+  <hr>
+
+  <!-- Outputs -->
+  <section class="output">
+    <p>Discharge Coefficient: <span id="C6"></span></p>
+    <p>Correction Factor (ft): <span id="C8"></span></p>
+    <p>Correction Factor (cm): <span id="C9"></span></p>
+    <hr>
+    <p>Head (ft): <span id="C7"></span></p>
+    <p>Discharge (ft³/s): <span id="C10"></span></p>
+    <p>Discharge (l/s): <span id="C11"></span></p>
+    <p>Discharge (m³/hr): <span id="C12"></span></p>
+  </section>
+
+</main>
+
+<script>
+const targets = {
+  c2: document.getElementById("C2"),
+  c3: document.getElementById("C3"),
+  C6: document.getElementById("C6"),
+  C7: document.getElementById("C7"),
+  C8: document.getElementById("C8"),
+  C9: document.getElementById("C9"),
+  C10: document.getElementById("C10"),
+  C11: document.getElementById("C11"),
+  C12: document.getElementById("C12"),
+}
+
+
+
+
+
+
+function handleChange() {
+  const C2 = parseFloat(targets.c2.value);
+  const C3 = parseFloat(targets.c3.value);
+
+  // Check if C2 is within range
+  if (!C2 || C2 < 45 || C2 > 90) {
+    targets.c2.style.borderColor = "red";
+    targets.c2.style.backgroundColor = "#ffe6e6";
+
+    // Clear all outputs
+    targets.C6.textContent = "";
+    targets.C7.textContent = "";
+    targets.C8.textContent = "";
+    targets.C9.textContent = "";
+    targets.C10.textContent = "";
+    targets.C11.textContent = "";
+    targets.C12.textContent = "";
+
+    return; // Stop calculations
+  } else {
+    targets.c2.style.borderColor = "";
+    targets.c2.style.backgroundColor = "";
+  }
+
+  // Calculations proceed only if C2 is valid
+  const C6_val = 0.607165052 - (0.000874466963 * C2) + (6.10393334 / 1000000 * Math.pow(C2, 2));
+  targets.C6.textContent = C6_val.toFixed(6) + " l/s";
+
+  const C8_val = 0.0144902648 - (0.00033955535 * C2) + (3.29819003 / 1000000 * Math.pow(C2, 2)) - (1.06215442 / 100000000 * Math.pow(C2, 3));
+  targets.C8.textContent = C8_val.toFixed(6) + " ft";
+
+  const C9_val = C8_val * 30.48;
+  targets.C9.textContent = C9_val.toFixed(6) + " cm";
+
+  if (C3) {
+    const C7_val = C3 / 30.48;
+    targets.C7.textContent = C7_val.toFixed(6) + " ft";
+
+    const C10_val = 4.28 * C6_val * Math.tan(C2 / 2 * Math.PI / 180) * Math.pow(C7_val + C8_val, 5 / 2);
+    targets.C10.textContent = C10_val.toFixed(6) + " ft³/s";
+
+    const C11_val = 28.3168466 * C10_val;
+    targets.C11.textContent = C11_val.toFixed(6) + " l/s";
+
+    const C12_val = 0.085065557 * C6_val * Math.tan(C2 / 2 * Math.PI / 180) * Math.pow(C3 + C9_val, 5 / 2);
+    targets.C12.textContent = C12_val.toFixed(6) + " m³/hr";
+  }
+}
+
+
+
+
+
+
+
+</script>
+
+</body>
+</html>
